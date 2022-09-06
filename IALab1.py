@@ -9,15 +9,14 @@ import numpy as np
 
 import random
 
-costo = random.randint(0, 50)
+costo = random.randint(0, 1)
 if costo == 0:
-    print('Comienza el jugador')
+    print('Comienza el jugador1')
 else:
     print('Comienza el PC')
 
 
 M1 = [[0, 14, -6], [12,0,4], [-11,3,0],[],[],[],[],[],[],[]]
-
 
 
 
