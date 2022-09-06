@@ -3,8 +3,15 @@
 import operator
 import random
 from collections import namedtuple
+from re import A
 
 import numpy as np
+
+
+
+
+
+
 
 GameState = namedtuple('GameState', 'to_move, utility, board, moves')
 StochasticGameState = namedtuple('StochasticGameState', 'to_move, utility, board, moves, chance')
@@ -334,5 +341,45 @@ b = CircuitoCiudades(a, 0, 2)
 ##b.printMatrizCiudades()
 
 b.actions(0)
+
+print("Escoge la ciudad de partida: ")
+print("A")
+print("B")
+print("C")
+print("D")
+print("E")
+print("F")
+print("G")
+print("H")
+print("I")
+print("J")
+
+seleccion=input()
+
+if seleccion=='A':
+    partida=0
+elif seleccion=='B':
+    partida=1
+elif seleccion=='C':
+    partida=2
+elif seleccion=='D':
+    partida=3
+elif seleccion=='E':
+    partida=4
+elif seleccion=='F':
+    partida=5
+elif seleccion=='G':
+    partida=6
+elif seleccion=='H':
+    partida=7
+elif seleccion=='I':
+    partida=8
+elif seleccion=='J':
+    partida=9
+else: 
+    print("Opción inválida")
+
+print("Ciudad de inicio es: ",partida)
+
 query_player(b, 0)
 
