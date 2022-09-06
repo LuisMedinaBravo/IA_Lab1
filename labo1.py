@@ -354,30 +354,48 @@ print("H")
 print("I")
 print("J")
 
-seleccion=input()
 
-if seleccion=='A':
-    partida=0
-elif seleccion=='B':
-    partida=1
-elif seleccion=='C':
-    partida=2
-elif seleccion=='D':
-    partida=3
-elif seleccion=='E':
-    partida=4
-elif seleccion=='F':
-    partida=5
-elif seleccion=='G':
-    partida=6
-elif seleccion=='H':
-    partida=7
-elif seleccion=='I':
-    partida=8
-elif seleccion=='J':
-    partida=9
-else: 
-    print("Opción inválida")
+valido=1
+partida=-1
+
+while valido!=0:
+
+    seleccion=input()
+
+    if seleccion=='A':
+        partida=0
+        valido=0
+    elif seleccion=='B':
+        partida=1
+        valido=0
+    elif seleccion=='C':
+        partida=2
+        valido=0
+    elif seleccion=='D':
+        partida=3
+        valido=0
+    elif seleccion=='E':
+        partida=4
+        valido=0
+    elif seleccion=='F':
+        partida=5
+        valido=0
+    elif seleccion=='G':
+        partida=6
+        valido=0
+    elif seleccion=='H':
+        partida=7
+        valido=0
+    elif seleccion=='I':
+        partida=8
+        valido=0
+    elif seleccion=='J':
+        partida=9
+        valido=0
+    else: 
+        print("Opción inválida")
+        valido=1
+
 
 print("Ciudad de inicio es: ",partida)
 
