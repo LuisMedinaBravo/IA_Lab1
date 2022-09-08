@@ -1,6 +1,6 @@
 """Games or Adversarial Search (Chapter 5)"""
 
-#Nos basamos en el código de la siguiente dirección (clase Game):
+#Nos basamos en el código de la siguiente dirección (clase minmax_decision):
 #https://github.com/aimacode/aima-python/blob/master/games.py
 
 
@@ -12,6 +12,23 @@ import numpy as np
 
 jug = 0
 nodofinal = -1
+esInt = False
+
+
+##Verificamos que la entrada sea un número entero mayor que cero
+while esInt == False:
+
+
+   print("Ingrese el nivel máximo del árbol: ")
+   seleccion3 = input()
+   
+   if(seleccion3.isnumeric()):
+        if seleccion3 > str(0):
+            esInt=True
+   else:
+     print("Entrada no válida")
+     print("")
+
 
 GameState = namedtuple('GameState', 'to_move, utility, board, moves')
 StochasticGameState = namedtuple('StochasticGameState',
@@ -22,17 +39,155 @@ def vector_add(a, b):
     """Component-wise addition of two vectors."""
     return tuple(map(operator.add, a, b))
 
+
+# ______________________________________________________________________________
+# MinMax Search
+
+      
+
+def minmax_decision(state, game, nivel):
+    """Given a state in a game, calculate the best move by searching
+    forward all the way to the terminal states. [Figure 5.3]"""
+   
+    player = game.to_move(state)
+  
+    def max_value(state, nivel):
+        
+        if(nivel==seleccion3):
+          return 0
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        #infinto
+        nivel = nivel +1
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), nivel))
+        return v
+
+    def min_value(state, nivel):
+        if(nivel==10):
+          return 0
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        v = np.inf
+        nivel=nivel+1
+        for a in game.actions(state):
+            
+            v = min(v, max_value(game.result(state, a),nivel))
+        return v
+
+    # Body of minmax_decision:
+    return max(game.actions(state),
+               key=lambda a: min_value(game.result(state, a), nivel))
+
+
+# ______________________________________________________________________________
+
+
+def alpha_beta_search(state, game):
+    """Search game to determine best action; use alpha-beta pruning.
+    As in [Figure 5.7], this version searches all the way to the leaves."""
+
+    player = game.to_move(state)
+
+    # Functions used by alpha_beta
+    def max_value(state, alpha, beta):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), alpha, beta))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(state, alpha, beta):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        v = np.inf
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), alpha, beta))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+    # Body of alpha_beta_search:
+    best_score = -np.inf
+    beta = np.inf
+    best_action = None
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), best_score, beta)
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
+
+def alpha_beta_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+    """Search game to determine best action; use alpha-beta pruning.
+    This version cuts off search and uses an evaluation function."""
+
+    player = game.to_move(state)
+
+    # Functions used by alpha_beta
+    def max_value(state, alpha, beta, depth):
+        if cutoff_test(state, depth):
+            return eval_fn(state)
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), alpha, beta,
+                                 depth + 1))
+            
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(state, alpha, beta, depth):
+        if cutoff_test(state, depth):
+            return eval_fn(state)
+        v = np.inf
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), alpha, beta,
+                                 depth + 1))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+    # Body of alpha_beta_cutoff_search starts here:
+    # The default test cuts off at depth d or at a terminal state
+    cutoff_test = (
+        cutoff_test
+        or (lambda state, depth: depth > d or game.terminal_test(state)))
+    eval_fn = eval_fn or (lambda state: game.utility(state, player))
+    best_score = -np.inf
+    beta = np.inf
+    best_action = None
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), best_score, beta, 1)
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
+
 # ______________________________________________________________________________
 # Players for Games
 
 
 def query_player(game, state, jug):
     """Make a move by querying standard input."""
-    
+    print("Nodo actual:")
     game.display(state)
     print("")
     print("Ciudades disponibles para moverse: {}".format(game.actions(state)))
-   
+    if len(game.actions(state)) == 0:
+        print("Esta vacia la lista de ciudades disponibles")
+    else:
+        print("Esta llena la lista de ciudades disponibles")
 
     print("")
     move = None
@@ -45,8 +200,7 @@ def query_player(game, state, jug):
             while flag==0:
 
              move_string = input('¿A qué ciudad te quieres mover? ')
-             ###print(move_string)
-             print("") 
+             print(move_string) 
              move = eval(move_string)
              if move_string>=str(0):
                   if move_string<=str(9):
@@ -57,7 +211,7 @@ def query_player(game, state, jug):
 
               
           
-           ### print("jugador " + str(jug) + " quiere moverse a " + move_string)
+            print("jugador " + str(jug) + " quiere moverse a " + move_string)
 
             if jug == 1:
                 jug = 2
@@ -76,6 +230,13 @@ def random_player(game, state):
     """A player that chooses a legal move at random."""
     return random.choice(game.actions(state)) if game.actions(state) else None
 
+
+def alpha_beta_player(game, state):
+    return alpha_beta_search(state, game)
+
+
+def minmax_player(game, state):
+    return minmax_decision(state, game)
 
 
 # ______________________________________________________________________________
@@ -137,7 +298,7 @@ class CircuitoCiudades(Game):
         self.s = ciudadSalida
         self.l = ciudadLlegada
         self.actual = ciudadLlegada
-        ##ASASASASASASSAASASASSA
+       
         self.visitadas1 = [ciudadSalida]
         self.visitadas2 = []
         self.suma1 = 0
@@ -152,12 +313,20 @@ class CircuitoCiudades(Game):
             if (x != 0):
                 if (self.turno == True):  #jugador 1
                     if (not contador in self.visitadas1):
+                        #print("jugador 1 se movió a "+str(contador))
+                        #print("No se puede mover a "+str(self.visitadas1))
                         movimientos.append(contador)
+                        self.turno = False
+                      
                 else:  #jugador 2
                     if (not contador in self.visitadas2):
                         movimientos.append(contador)
+                       # print("jugador 2 se movió a "+str(contador))
+                        #print("No se puede mover a "+str(self.visitadas2))
+                        self.turno = True
 
             contador = contador + 1
+            
         #for y in movimientos:
         #    print(y, end=" ")
 
@@ -165,29 +334,34 @@ class CircuitoCiudades(Game):
 
     def utility(self, state, player):
         """Return the value of this final state to player."""
-        print("")
         print("J1 " + str(self.suma1))
         print("J2 " + str(self.suma2))
+      
         if (self.suma1 > self.suma2):
-            print("")
             print("Ganó J1")
-            print("FIN DEL JUEGO")
+            print("Fin combinación de jugada")
             print("")
+            #exit()
             return self.suma1
+            #exit()
         elif (self.suma1 == self.suma2):
             print("Empate")
-            print("FIN DEL JUEGO")
+            print("Fin combinación de jugada")
             print("")
+            #exit()
             return self.suma1
+            #exit()
+            
         else:
             print("Ganó J2")
-            print("FIN DEL JUEGO")
+            print("Fin combinación de jugada")
             print("")
+            #exit()
             return self.suma2
-
+            #exit()
+          
     def display(self, state):
         """Print or otherwise display the state."""
-        print("")
         print("Mi estado es: " + str(state))
 
     def play_game(self, *players):
@@ -197,6 +371,7 @@ class CircuitoCiudades(Game):
             for player in players:
                 ##move = player(self, state)
                 move = query_player(self, state, jug)
+                
                 state = self.result(state, move)
                 ## query_player(self, state,jug)
                 if self.terminal_test(state):
@@ -211,15 +386,17 @@ class CircuitoCiudades(Game):
         """Return the state that results from making a move from a state."""
         if (self.turno == True):
             self.suma1 = self.suma1 + self.m[0][move]
-            print("j1 lleva " + str(self.suma1))
+      ##      print("j1 lleva " + str(self.suma1))
         else:
             self.suma2 = self.suma2 + self.m[0][move]
-            print("j2 lleva " + str(self.suma2))
+        ##    print("j2 lleva " + str(self.suma2))
         self.turno = not self.turno
         if (self.turno == True):
             self.visitadas1.append(move)
         else:
             self.visitadas2.append(move)
+
+       # print("jugada con mayor valor "+str(self.m[0][move]))
 
         return move
 
@@ -231,10 +408,12 @@ class CircuitoCiudades(Game):
     def terminal_test(self, state):
         """Return True if this is a final state for the game."""
         if (state == self.l):
-            ###print("termine1")
+            #print("Fin combinación de jugadas")
+            print("")
             return True
         if (len(self.actions(state)) == 0):
-            print("termine2")
+            #print("Fin combinación de jugadas")
+            print("")
             return True
         return not self.actions(state)
 
@@ -245,8 +424,9 @@ class CircuitoCiudades(Game):
             print(x)
 
 
+          
 ##matriz
-
+print("")
 print("Espacio de Estados")
 print("")
 a = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -254,6 +434,8 @@ a = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+
 
 #llenado de matriz
 for i in range(10):
@@ -274,7 +456,6 @@ print("****************************************")
 ##fin llenado matriz
 
 ##b.printMatrizCiudades()
-
 print("")
 print("Empieza J1")
 
@@ -375,10 +556,17 @@ while valido != 0:
         valido = 0
     else:
         print("Opción no válida")
+        print("")
         print("Ingrese otro estado final")
         valido = 1
 
 print("Ciudad de término es: ", nodofinal)
+print("")
+print("Listado de todas las combinaciones posibles para el nivel ingresado:")
+print("")
 
 b = CircuitoCiudades(a, 0, nodofinal)
-b.play_game("J1", "J2")
+
+#b.play_game("J1", "J2")
+
+print("La mejor jugada es ir a el nodo: "+str(minmax_decision(0, b, 0)))
